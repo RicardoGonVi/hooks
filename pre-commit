@@ -1,0 +1,30 @@
+#!/bin/sh
+
+echo ">>> pre-commit hook is running..."
+
+STAGED_PY_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.py$')
+
+if [ -z "$STAGED_PY_FILES" ]; then
+  exit 0
+fi
+
+echo "Formatting staged Python files with autopep8..."
+
+CHANGED=0
+for file in $STAGED_PY_FILES; do
+    # Run autopep8 in place
+    autopep8 --in-place --aggressive --aggressive "$file"
+
+    # Check if the file content differs from what’s staged
+    if ! git diff --quiet "$file"; then
+        echo "File $file was reformatted. Please add it again before committing."
+        CHANGED=1
+    fi
+done
+
+if [ $CHANGED -ne 0 ]; then
+    echo "❌ Commit aborted. Run 'git add <files>' and commit again."
+    exit 1
+fi
+
+exit 0
