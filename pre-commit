@@ -8,6 +8,7 @@ if [ -z "$STAGED_PY_FILES" ]; then
   exit 0
 fi
 
+# Python formatting
 echo "Formatting staged Python files with autopep8..."
 
 CHANGED=0
@@ -26,5 +27,17 @@ if [ $CHANGED -ne 0 ]; then
     echo "❌ Commit aborted. Run 'git add <files>' and commit again."
     exit 1
 fi
+
+# Run tests
+echo ">>> Running pytest..."
+pytest --maxfail=1 --disable-warnings -q
+
+TEST_RESULT=$?
+if [ $TEST_RESULT -ne 0 ]; then
+    echo "❌ Commit aborted: tests failed."
+    exit 1
+fi
+
+echo "✅ All tests passed. Proceeding with commit."
 
 exit 0
